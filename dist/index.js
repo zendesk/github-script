@@ -36258,6 +36258,23 @@ const wrapRequire = new Proxy(require, {
 
 process.on('unhandledRejection', handleError);
 main().catch(handleError);
+/**
+ * Gets the user agent string with orchestration ID appended if available
+ * @param userAgent The base user agent string
+ * @returns The user agent string with orchestration ID appended if ACTIONS_ORCHESTRATION_ID is set
+ */
+function getUserAgentWithOrchestrationId(userAgent) {
+    const orchestrationId = process.env['ACTIONS_ORCHESTRATION_ID'];
+    if (!orchestrationId) {
+        return userAgent;
+    }
+    // Sanitize orchestration ID - only keep alphanumeric, dots, and hyphens
+    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '');
+    if (!sanitized) {
+        return userAgent;
+    }
+    return `${userAgent} orchestration-id/${sanitized}`;
+}
 async function main() {
     const token = core.getInput('github-token', { required: true });
     const debug = core.getBooleanInput('debug');
@@ -36267,9 +36284,11 @@ async function main() {
     const retries = parseInt(core.getInput('retries'));
     const exemptStatusCodes = parseNumberArray(core.getInput('retry-exempt-status-codes'));
     const [retryOpts, requestOpts] = getRetryOptions(retries, exemptStatusCodes, utils.defaults);
+    const baseUserAgent = userAgent || 'actions/github-script';
+    const finalUserAgent = getUserAgentWithOrchestrationId(baseUserAgent);
     const opts = {
         log: debug ? console : undefined,
-        userAgent: userAgent || undefined,
+        userAgent: finalUserAgent,
         previews: previews ? previews.split(',') : undefined,
         retry: retryOpts,
         request: requestOpts

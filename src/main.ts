@@ -23,6 +23,26 @@ type Options = {
   request?: RequestRequestOptions
 }
 
+/**
+ * Gets the user agent string with orchestration ID appended if available
+ * @param userAgent The base user agent string
+ * @returns The user agent string with orchestration ID appended if ACTIONS_ORCHESTRATION_ID is set
+ */
+function getUserAgentWithOrchestrationId(userAgent: string): string {
+  const orchestrationId = process.env['ACTIONS_ORCHESTRATION_ID']
+  if (!orchestrationId) {
+    return userAgent
+  }
+
+  // Sanitize orchestration ID - only keep alphanumeric, dots, and hyphens
+  const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '')
+  if (!sanitized) {
+    return userAgent
+  }
+
+  return `${userAgent} orchestration-id/${sanitized}`
+}
+
 async function main(): Promise<void> {
   const token = core.getInput('github-token', {required: true})
   const debug = core.getBooleanInput('debug')
@@ -39,9 +59,12 @@ async function main(): Promise<void> {
     defaultGitHubOptions
   )
 
+  const baseUserAgent = userAgent || 'actions/github-script'
+  const finalUserAgent = getUserAgentWithOrchestrationId(baseUserAgent)
+
   const opts: Options = {
     log: debug ? console : undefined,
-    userAgent: userAgent || undefined,
+    userAgent: finalUserAgent,
     previews: previews ? previews.split(',') : undefined,
     retry: retryOpts,
     request: requestOpts
