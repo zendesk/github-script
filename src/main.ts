@@ -39,8 +39,7 @@ async function main(): Promise<void> {
     defaultGitHubOptions
   )
 
-  const baseUserAgent =
-    userAgent === '' ? '' : userAgent || 'actions/github-script'
+  const baseUserAgent = userAgent || 'actions/github-script'
   const finalUserAgent = getUserAgentWithOrchestrationId(baseUserAgent)
 
   const opts: Options = {
@@ -114,9 +113,6 @@ function getUserAgentWithOrchestrationId(userAgent: string): string {
 
   // Sanitize orchestration ID - replace invalid characters with underscore
   const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '_')
-  if (!sanitized) {
-    return userAgent
-  }
 
   return `${userAgent} orchestration-id/${sanitized}`
 }

@@ -36267,7 +36267,7 @@ async function main() {
     const retries = parseInt(core.getInput('retries'));
     const exemptStatusCodes = parseNumberArray(core.getInput('retry-exempt-status-codes'));
     const [retryOpts, requestOpts] = getRetryOptions(retries, exemptStatusCodes, utils.defaults);
-    const baseUserAgent = userAgent === '' ? '' : userAgent || 'actions/github-script';
+    const baseUserAgent = userAgent || 'actions/github-script';
     const finalUserAgent = getUserAgentWithOrchestrationId(baseUserAgent);
     const opts = {
         log: debug ? console : undefined,
@@ -36327,9 +36327,6 @@ function getUserAgentWithOrchestrationId(userAgent) {
     }
     // Sanitize orchestration ID - replace invalid characters with underscore
     const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '_');
-    if (!sanitized) {
-        return userAgent;
-    }
     return `${userAgent} orchestration-id/${sanitized}`;
 }
 
