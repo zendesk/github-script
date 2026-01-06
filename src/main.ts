@@ -23,26 +23,6 @@ type Options = {
   request?: RequestRequestOptions
 }
 
-/**
- * Gets the user agent string with orchestration ID appended if available
- * @param userAgent The base user agent string
- * @returns The user agent string with orchestration ID appended if ACTIONS_ORCHESTRATION_ID is set
- */
-function getUserAgentWithOrchestrationId(userAgent: string): string {
-  const orchestrationId = process.env['ACTIONS_ORCHESTRATION_ID']
-  if (!orchestrationId) {
-    return userAgent
-  }
-
-  // Sanitize orchestration ID - only keep alphanumeric, dots, hyphens, and underscores
-  const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '')
-  if (!sanitized) {
-    return userAgent
-  }
-
-  return `${userAgent} orchestration-id/${sanitized}`
-}
-
 async function main(): Promise<void> {
   const token = core.getInput('github-token', {required: true})
   const debug = core.getBooleanInput('debug')
@@ -118,4 +98,24 @@ async function main(): Promise<void> {
 function handleError(err: any): void {
   console.error(err)
   core.setFailed(`Unhandled error: ${err}`)
+}
+
+/**
+ * Gets the user agent string with orchestration ID appended if available
+ * @param userAgent The base user agent string
+ * @returns The user agent string with orchestration ID appended if ACTIONS_ORCHESTRATION_ID is set
+ */
+function getUserAgentWithOrchestrationId(userAgent: string): string {
+  const orchestrationId = process.env['ACTIONS_ORCHESTRATION_ID']
+  if (!orchestrationId) {
+    return userAgent
+  }
+
+  // Sanitize orchestration ID - only keep alphanumeric, dots, hyphens, and underscores
+  const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '')
+  if (!sanitized) {
+    return userAgent
+  }
+
+  return `${userAgent} orchestration-id/${sanitized}`
 }
