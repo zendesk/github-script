@@ -24,7 +24,9 @@ describe('getUserAgentWithOrchestrationId', () => {
     const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '')
     const result = `${baseUserAgent} orchestration-id/${sanitized}`
 
-    expect(result).toBe('actions/github-script orchestration-id/test-orchestration-123')
+    expect(result).toBe(
+      'actions/github-script orchestration-id/test-orchestration-123'
+    )
   })
 
   test('sanitizes orchestration ID by removing special characters', () => {
@@ -35,7 +37,9 @@ describe('getUserAgentWithOrchestrationId', () => {
     const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '')
     const result = `${baseUserAgent} orchestration-id/${sanitized}`
 
-    expect(result).toBe('actions/github-script orchestration-id/testorchestration123abcxyz')
+    expect(result).toBe(
+      'actions/github-script orchestration-id/testorchestration123abcxyz'
+    )
   })
 
   test('preserves dots and hyphens in orchestration ID', () => {
@@ -46,7 +50,9 @@ describe('getUserAgentWithOrchestrationId', () => {
     const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '')
     const result = `${baseUserAgent} orchestration-id/${sanitized}`
 
-    expect(result).toBe('actions/github-script orchestration-id/test.orchestration-123')
+    expect(result).toBe(
+      'actions/github-script orchestration-id/test.orchestration-123'
+    )
   })
 
   test('does not append orchestration ID when ACTIONS_ORCHESTRATION_ID is not set', () => {
@@ -55,7 +61,9 @@ describe('getUserAgentWithOrchestrationId', () => {
 
     // Simulate the logic from getUserAgentWithOrchestrationId
     const orchestrationId = process.env['ACTIONS_ORCHESTRATION_ID']
-    const result = orchestrationId ? `${baseUserAgent} orchestration-id/${orchestrationId}` : baseUserAgent
+    const result = orchestrationId
+      ? `${baseUserAgent} orchestration-id/${orchestrationId}`
+      : baseUserAgent
 
     expect(result).toBe('actions/github-script')
   })
@@ -66,7 +74,9 @@ describe('getUserAgentWithOrchestrationId', () => {
 
     // Simulate the logic from getUserAgentWithOrchestrationId
     const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '')
-    const result = sanitized ? `${baseUserAgent} orchestration-id/${sanitized}` : baseUserAgent
+    const result = sanitized
+      ? `${baseUserAgent} orchestration-id/${sanitized}`
+      : baseUserAgent
 
     expect(result).toBe('actions/github-script')
   })
