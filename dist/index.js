@@ -36267,7 +36267,7 @@ async function main() {
     const retries = parseInt(core.getInput('retries'));
     const exemptStatusCodes = parseNumberArray(core.getInput('retry-exempt-status-codes'));
     const [retryOpts, requestOpts] = getRetryOptions(retries, exemptStatusCodes, utils.defaults);
-    const baseUserAgent = userAgent || 'actions/github-script';
+    const baseUserAgent = userAgent === '' ? '' : userAgent || 'actions/github-script';
     const finalUserAgent = getUserAgentWithOrchestrationId(baseUserAgent);
     const opts = {
         log: debug ? console : undefined,

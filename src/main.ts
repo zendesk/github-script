@@ -39,7 +39,8 @@ async function main(): Promise<void> {
     defaultGitHubOptions
   )
 
-  const baseUserAgent = userAgent || 'actions/github-script'
+  const baseUserAgent =
+    userAgent === '' ? '' : userAgent || 'actions/github-script'
   const finalUserAgent = getUserAgentWithOrchestrationId(baseUserAgent)
 
   const opts: Options = {
