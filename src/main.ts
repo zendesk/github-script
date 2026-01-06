@@ -34,8 +34,8 @@ function getUserAgentWithOrchestrationId(userAgent: string): string {
     return userAgent
   }
 
-  // Sanitize orchestration ID - only keep alphanumeric, dots, and hyphens
-  const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '')
+  // Sanitize orchestration ID - only keep alphanumeric, dots, hyphens, and underscores
+  const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '')
   if (!sanitized) {
     return userAgent
   }

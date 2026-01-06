@@ -21,7 +21,7 @@ describe('getUserAgentWithOrchestrationId', () => {
     process.env['ACTIONS_ORCHESTRATION_ID'] = orchestrationId
 
     // Simulate the logic from getUserAgentWithOrchestrationId
-    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '')
+    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '')
     const result = `${baseUserAgent} orchestration-id/${sanitized}`
 
     expect(result).toBe(
@@ -34,7 +34,7 @@ describe('getUserAgentWithOrchestrationId', () => {
     const orchestrationId = 'test@orchestration#123!abc$xyz'
 
     // Simulate the logic from getUserAgentWithOrchestrationId
-    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '')
+    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '')
     const result = `${baseUserAgent} orchestration-id/${sanitized}`
 
     expect(result).toBe(
@@ -42,16 +42,16 @@ describe('getUserAgentWithOrchestrationId', () => {
     )
   })
 
-  test('preserves dots and hyphens in orchestration ID', () => {
+  test('preserves dots, hyphens, and underscores in orchestration ID', () => {
     const baseUserAgent = 'actions/github-script'
-    const orchestrationId = 'test.orchestration-123'
+    const orchestrationId = 'test.orchestration-123_abc'
 
     // Simulate the logic from getUserAgentWithOrchestrationId
-    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '')
+    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '')
     const result = `${baseUserAgent} orchestration-id/${sanitized}`
 
     expect(result).toBe(
-      'actions/github-script orchestration-id/test.orchestration-123'
+      'actions/github-script orchestration-id/test.orchestration-123_abc'
     )
   })
 
@@ -73,7 +73,7 @@ describe('getUserAgentWithOrchestrationId', () => {
     const orchestrationId = '@#$%^&*()'
 
     // Simulate the logic from getUserAgentWithOrchestrationId
-    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9.-]/g, '')
+    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '')
     const result = sanitized
       ? `${baseUserAgent} orchestration-id/${sanitized}`
       : baseUserAgent
