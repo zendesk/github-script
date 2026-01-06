@@ -36325,8 +36325,8 @@ function getUserAgentWithOrchestrationId(userAgent) {
     if (!orchestrationId) {
         return userAgent;
     }
-    // Sanitize orchestration ID - only keep alphanumeric, dots, hyphens, and underscores
-    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '');
+    // Sanitize orchestration ID - replace invalid characters with underscore
+    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '_');
     if (!sanitized) {
         return userAgent;
     }
