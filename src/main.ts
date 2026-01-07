@@ -114,5 +114,5 @@ function getUserAgentWithOrchestrationId(userAgent: string): string {
   // Sanitize orchestration ID - replace invalid characters with underscore
   const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '_')
 
-  return `${userAgent} orchestration-id/${sanitized}`
+  return `${userAgent} actions_orchestration_id/${sanitized}`
 }
