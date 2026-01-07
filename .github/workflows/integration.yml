@@ -167,7 +167,7 @@ jobs:
             exit 1
           fi
           echo "- Validating user-agent set to an empty string"
-          expected="octokit-core.js/"
+          expected="actions/github-script octokit-core.js/"
           if [[ "${{steps.user-agent-empty.outputs.result}}" != "$expected"* ]]; then
             echo $'::error::\u274C' "Expected user-agent to start with '$expected', got ${{steps.user-agent-empty.outputs.result}}"
             exit 1

@@ -36267,9 +36267,11 @@ async function main() {
     const retries = parseInt(core.getInput('retries'));
     const exemptStatusCodes = parseNumberArray(core.getInput('retry-exempt-status-codes'));
     const [retryOpts, requestOpts] = getRetryOptions(retries, exemptStatusCodes, utils.defaults);
+    const baseUserAgent = userAgent || 'actions/github-script';
+    const finalUserAgent = getUserAgentWithOrchestrationId(baseUserAgent);
     const opts = {
         log: debug ? console : undefined,
-        userAgent: userAgent || undefined,
+        userAgent: finalUserAgent,
         previews: previews ? previews.split(',') : undefined,
         retry: retryOpts,
         request: requestOpts
@@ -36312,6 +36314,20 @@ async function main() {
 function handleError(err) {
     console.error(err);
     core.setFailed(`Unhandled error: ${err}`);
+}
+/**
+ * Gets the user agent string with orchestration ID appended if available
+ * @param userAgent The base user agent string
+ * @returns The user agent string with orchestration ID appended if ACTIONS_ORCHESTRATION_ID is set
+ */
+function getUserAgentWithOrchestrationId(userAgent) {
+    const orchestrationId = process.env['ACTIONS_ORCHESTRATION_ID'];
+    if (!orchestrationId) {
+        return userAgent;
+    }
+    // Sanitize orchestration ID - replace invalid characters with underscore
+    const sanitized = orchestrationId.replace(/[^a-zA-Z0-9._-]/g, '_');
+    return `${userAgent} actions_orchestration_id/${sanitized}`;
 }
 
 })();
