@@ -155,21 +155,21 @@ jobs:
           result-encoding: string
       - run: |
           echo "- Validating user-agent default"
-          expected="actions/github-script octokit-core.js/"
-          if [[ "${{steps.user-agent-default.outputs.result}}" != "$expected"* ]]; then
-            echo $'::error::\u274C' "Expected user-agent to start with '$expected', got ${{steps.user-agent-default.outputs.result}}"
+          ua="${{steps.user-agent-default.outputs.result}}"
+          if [[ "$ua" != "actions/github-script octokit-core.js/"* ]] && [[ "$ua" != "actions/github-script actions_orchestration_id/"* ]]; then
+            echo $'::error::\u274C' "Expected user-agent to start with 'actions/github-script', got $ua"
             exit 1
           fi
           echo "- Validating user-agent set to a value"
-          expected="foobar octokit-core.js/"
-          if [[ "${{steps.user-agent-set.outputs.result}}" != "$expected"* ]]; then
-            echo $'::error::\u274C' "Expected user-agent to start with '$expected', got ${{steps.user-agent-set.outputs.result}}"
+          ua="${{steps.user-agent-set.outputs.result}}"
+          if [[ "$ua" != "foobar octokit-core.js/"* ]] && [[ "$ua" != "foobar actions_orchestration_id/"* ]]; then
+            echo $'::error::\u274C' "Expected user-agent to start with 'foobar', got $ua"
             exit 1
           fi
           echo "- Validating user-agent set to an empty string"
-          expected="actions/github-script octokit-core.js/"
-          if [[ "${{steps.user-agent-empty.outputs.result}}" != "$expected"* ]]; then
-            echo $'::error::\u274C' "Expected user-agent to start with '$expected', got ${{steps.user-agent-empty.outputs.result}}"
+          ua="${{steps.user-agent-empty.outputs.result}}"
+          if [[ "$ua" != "actions/github-script octokit-core.js/"* ]] && [[ "$ua" != "actions/github-script actions_orchestration_id/"* ]]; then
+            echo $'::error::\u274C' "Expected user-agent to start with 'actions/github-script', got $ua"
             exit 1
           fi
           echo $'\u2705 Test passed' | tee -a $GITHUB_STEP_SUMMARY
