@@ -9,7 +9,7 @@ uses the GitHub API and the workflow run context.
 
 ### Note
 
-Thank you for your interest in this GitHub action, however, right now we are not taking contributions. 
+Thank you for your interest in this GitHub action, however, right now we are not taking contributions.
 
 We continue to focus our resources on strategic areas that help our customers be successful while making developers' lives easier. While GitHub Actions remains a key part of this vision, we are allocating resources towards other areas of Actions and are not taking contributions to this repository at this time. The GitHub public roadmap is the best place to follow along for any updates on features we’re working on and what stage they’re in.
 
@@ -25,7 +25,7 @@ We will still provide security updates for this project and fix major breaking c
 
 You are welcome to still raise bugs in this repo.
 
-### This action 
+### This action
 
 To use this action, provide an input named `script` that contains the body of an asynchronous JavaScript function call.
 The following arguments will be provided:
@@ -38,6 +38,7 @@ The following arguments will be provided:
 - `glob` A reference to the [@actions/glob](https://github.com/actions/toolkit/tree/main/packages/glob) package
 - `io` A reference to the [@actions/io](https://github.com/actions/toolkit/tree/main/packages/io) package
 - `exec` A reference to the [@actions/exec](https://github.com/actions/toolkit/tree/main/packages/exec) package
+- `getOctokit` A factory function to create additional authenticated Octokit clients with different tokens (see [Creating additional clients](#creating-additional-clients-with-getoctokit))
 - `require` A proxy wrapper around the normal Node.js `require` to enable
   requiring relative paths (relative to the current working directory) and
   requiring npm packages installed in the current working directory. If for
@@ -52,6 +53,21 @@ See [octokit/rest.js](https://octokit.github.io/rest.js/) for the API client
 documentation.
 
 ## Breaking Changes
+
+### V9
+
+Version 9 of this action upgrades to `@actions/github` v9, which brings the latest Octokit types and features.
+
+**New features:**
+
+- **`getOctokit` factory function** — Available directly in the script context. Create additional authenticated Octokit clients with different tokens for multi-token workflows, GitHub App tokens, and cross-org access. See [Creating additional clients with `getOctokit`](#creating-additional-clients-with-getoctokit) for details and examples.
+- **Orchestration ID in user-agent** — The `ACTIONS_ORCHESTRATION_ID` environment variable is automatically appended to the user-agent string for request tracing.
+
+**Breaking changes:**
+
+- **`require('@actions/github')` no longer works in scripts.** The upgrade to `@actions/github` v9 (ESM-only) means `require('@actions/github')` will fail at runtime. If you previously used patterns like `const { getOctokit } = require('@actions/github')` to create secondary clients, use the new injected `getOctokit` function instead — it's available directly in the script context with no imports needed.
+- `getOctokit` is now an injected function parameter. Scripts that declare `const getOctokit = ...` or `let getOctokit = ...` will get a `SyntaxError` because JavaScript does not allow `const`/`let` redeclaration of function parameters. Use the injected `getOctokit` directly, or use `var getOctokit = ...` if you need to redeclare it.
+- If your script accesses other `@actions/github` internals beyond the standard `github`/`octokit` client, you may need to update those references for v9 compatibility.
 
 ### V8
 
@@ -90,16 +106,16 @@ See [development.md](/docs/development.md).
 ## Passing inputs to the script
 
 Actions expressions are evaluated before the `script` is passed to the action, so the result of any expressions
-*will be evaluated as JavaScript code*.
+_will be evaluated as JavaScript code_.
 
-It's highly recommended to *not* evaluate expressions directly in the `script` to avoid
+It's highly recommended to _not_ evaluate expressions directly in the `script` to avoid
 [script injections](https://docs.github.com/actions/security-for-github-actions/security-guides/security-hardening-for-github-actions#understanding-the-risk-of-script-injections)
 and potential `SyntaxError`s when the expression is not valid JavaScript code (particularly when it comes to improperly escaped strings).
 
 To pass inputs, set `env` vars on the action step and reference them in your script with `process.env`:
 
 ```yaml
-- uses: actions/github-script@v8
+- uses: actions/github-script@v9
   env:
     TITLE: ${{ github.event.pull_request.title }}
   with:
@@ -118,7 +134,7 @@ The return value of the script will be in the step's outputs under the
 "result" key.
 
 ```yaml
-- uses: actions/github-script@v8
+- uses: actions/github-script@v9
   id: set-result
   with:
     script: return "Hello!"
@@ -137,7 +153,7 @@ output of a github-script step. For some workflows, string encoding is preferred
 `result-encoding` input:
 
 ```yaml
-- uses: actions/github-script@v8
+- uses: actions/github-script@v9
   id: my-script
   with:
     result-encoding: string
@@ -149,7 +165,7 @@ output of a github-script step. For some workflows, string encoding is preferred
 By default, requests made with the `github` instance will not be retried. You can configure this with the `retries` option:
 
 ```yaml
-- uses: actions/github-script@v8
+- uses: actions/github-script@v9
   id: my-script
   with:
     result-encoding: string
@@ -167,7 +183,7 @@ In this example, request failures from `github.rest.issues.get()` will be retrie
 You can also configure which status codes should be exempt from retries via the `retry-exempt-status-codes` option:
 
 ```yaml
-- uses: actions/github-script@v8
+- uses: actions/github-script@v9
   id: my-script
   with:
     result-encoding: string
@@ -196,7 +212,7 @@ By default, github-script will use the token provided to your workflow.
 
 ```yaml
 - name: View context attributes
-  uses: actions/github-script@v8
+  uses: actions/github-script@v9
   with:
     script: console.log(context)
 ```
@@ -212,7 +228,7 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             github.rest.issues.createComment({
@@ -234,7 +250,7 @@ jobs:
   apply-label:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             github.rest.issues.addLabels({
@@ -256,7 +272,7 @@ jobs:
   welcome:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             // Get a list of all issues created by the PR opener
@@ -301,7 +317,7 @@ jobs:
   diff:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const diff_url = context.payload.pull_request.diff_url
@@ -325,7 +341,7 @@ jobs:
   list-issues:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const query = `query($owner:String!, $name:String!, $label:String!) {
@@ -359,7 +375,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const script = require('./path/to/script.js')
@@ -397,7 +413,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         env:
           SHA: '${{env.parentSHA}}'
         with:
@@ -441,7 +457,7 @@ jobs:
       - run: npm ci
       # or one-off:
       - run: npm install execa
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const execa = require('execa')
@@ -471,7 +487,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const { default: printStuff } = await import('${{ github.workspace }}/src/print-stuff.js')
@@ -483,20 +499,21 @@ jobs:
 
 If you want type support for your scripts, you could use the command below to install the
 `@actions/github-script` type declaration.
+
 ```sh
 $ npm i -D @actions/github-script@github:actions/github-script
 ```
 
 And then add the `jsDoc` declaration to your script like this:
+
 ```js
 // @ts-check
 /** @param {import('@actions/github-script').AsyncFunctionArguments} AsyncFunctionArguments */
-export default async ({ core, context }) => {
-  core.debug("Running something at the moment");
-  return context.actor;
-};
+export default async ({core, context}) => {
+  core.debug('Running something at the moment')
+  return context.actor
+}
 ```
-
 
 ### Using a separate GitHub token
 
@@ -506,25 +523,89 @@ If you need access to a different repository or an API that the `GITHUB_TOKEN` d
 
 [Learn more about creating and using encrypted secrets](https://docs.github.com/actions/reference/encrypted-secrets)
 
-```yaml
-on:
-  issues:
-    types: [opened]
+### Creating additional clients with `getOctokit`
 
-jobs:
-  apply-label:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/github-script@v8
-        with:
-          github-token: ${{ secrets.MY_PAT }}
-          script: |
-            github.rest.issues.addLabels({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              labels: ['Triage']
-            })
+The `getOctokit` function is available in the script context and lets you create additional authenticated Octokit clients — useful when you need to interact with the GitHub API using a different token than the one provided to the action (e.g. a GitHub App installation token, a PAT for cross-org access, or a fine-grained token with different permissions).
+
+```js
+getOctokit(token)
+getOctokit(token, opts)
+```
+
+**Parameters:**
+
+| Name    | Type     | Description                                                                             |
+| ------- | -------- | --------------------------------------------------------------------------------------- |
+| `token` | `string` | **Required.** A GitHub token (PAT, GitHub App token, etc.)                              |
+| `opts`  | `object` | Optional. Octokit constructor options (e.g. `userAgent`, `baseUrl`, `request`, `retry`) |
+
+The returned client is fully configured with the same plugins as `github` (retry, request-log, proxy support) — you don't need to set those up yourself.
+
+**Option merging behavior:** `request` and `retry` are deep-merged with the action's defaults, so you can override individual fields (e.g. `{request: {timeout: 5000}}`) without losing the inherited retry count or proxy settings. All other top-level options (like `baseUrl` or `userAgent`) are replaced outright if you provide them.
+
+> **Note:** `getOctokit` is injected as a function parameter (like `github`, `context`, `core`, etc.). You cannot redeclare it with `const` or `let` — this will cause a `SyntaxError`. Use `getOctokit` directly, or use `var` if you need to redeclare it. See [V9 breaking changes](#v9) for details.
+
+#### Basic usage — one primary token, one secondary token
+
+```yaml
+- uses: actions/github-script@v9
+  env:
+    APP_TOKEN: ${{ secrets.MY_APP_TOKEN }}
+  with:
+    github-token: ${{ secrets.GITHUB_TOKEN }}
+    script: |
+      // `github` uses GITHUB_TOKEN (scoped to this repo)
+      await github.rest.issues.addLabels({
+        issue_number: context.issue.number,
+        owner: context.repo.owner,
+        repo: context.repo.repo,
+        labels: ['triage']
+      })
+
+      // `getOctokit` creates a second client with a different token
+      const appOctokit = getOctokit(process.env.APP_TOKEN)
+      await appOctokit.rest.repos.createDispatchEvent({
+        owner: 'my-org',
+        repo: 'another-repo',
+        event_type: 'trigger-deploy'
+      })
+```
+
+#### Multiple clients for cross-org workflows
+
+```yaml
+- uses: actions/github-script@v9
+  env:
+    ORG_A_TOKEN: ${{ secrets.ORG_A_PAT }}
+    ORG_B_TOKEN: ${{ secrets.ORG_B_PAT }}
+  with:
+    script: |
+      const orgA = getOctokit(process.env.ORG_A_TOKEN)
+      const orgB = getOctokit(process.env.ORG_B_TOKEN)
+
+      const [repoA, repoB] = await Promise.all([
+        orgA.rest.repos.get({ owner: 'org-a', repo: 'service' }),
+        orgB.rest.repos.get({ owner: 'org-b', repo: 'service' })
+      ])
+
+      console.log(`Org A: ${repoA.data.full_name}`)
+      console.log(`Org B: ${repoB.data.full_name}`)
+```
+
+#### Custom options
+
+```yaml
+- uses: actions/github-script@v9
+  env:
+    GHES_TOKEN: ${{ secrets.GHES_PAT }}
+  with:
+    script: |
+      const ghes = getOctokit(process.env.GHES_TOKEN, {
+        baseUrl: 'https://github.example.com/api/v3'
+      })
+
+      const { data } = await ghes.rest.repos.listForOrg({ org: 'internal' })
+      console.log(`Found ${data.length} repos on GHES`)
 ```
 
 ### Using exec package
@@ -539,7 +620,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const exitCode = await exec.exec('echo', ['hello'])
@@ -557,7 +638,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/github-script@v8
+      - uses: actions/github-script@v9
         with:
           script: |
             const {
@@ -567,4 +648,4 @@ jobs:
             } = await exec.getExecOutput('echo', ['hello']);
 
             console.log(exitCode, stdout, stderr)
-```      
+```
