@@ -8,6 +8,7 @@ import {requestLog} from '@octokit/plugin-request-log'
 import {retry} from '@octokit/plugin-retry'
 import {RequestRequestOptions} from '@octokit/types'
 import {callAsyncFunction} from './async-function'
+import {createConfiguredGetOctokit} from './create-configured-getoctokit'
 import {RetryOptions, getRetryOptions, parseNumberArray} from './retry-options'
 import {wrapRequire} from './wrap-require'
 
@@ -59,6 +60,16 @@ async function main(): Promise<void> {
   const github = getOctokit(token, opts, retry, requestLog)
   const script = core.getInput('script', {required: true})
 
+  // Wrap getOctokit so secondary clients inherit retry, logging,
+  // orchestration ID, and the action's retries input.
+  // Deep-copy opts to prevent shared references with the primary client.
+  const configuredGetOctokit = createConfiguredGetOctokit(
+    getOctokit,
+    {...opts, retry: {...opts.retry}, request: {...opts.request}},
+    retry,
+    requestLog
+  )
+
   // Using property/value shorthand on `require` (e.g. `{require}`) causes compilation errors.
   const result = await callAsyncFunction(
     {
@@ -66,6 +77,7 @@ async function main(): Promise<void> {
       __original_require__: __non_webpack_require__,
       github,
       octokit: github,
+      getOctokit: configuredGetOctokit,
       context,
       core,
       exec,
